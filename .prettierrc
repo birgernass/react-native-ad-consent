@@ -1,0 +1,22 @@
+{
+  "bracketSpacing": true,
+  "insertPragma": false,
+  "jsxBracketSameLine": false,
+  "overrides": [
+    {
+      "files": ["app/**/*.json"],
+      "options": {
+        "parser": "json"
+      }
+    }
+  ],
+  "parser": "babylon",
+  "printWidth": 80,
+  "proseWrap": true,
+  "requirePragma": false,
+  "semi": false,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "es5",
+  "useTabs": false
+}

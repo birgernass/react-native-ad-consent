@@ -1,0 +1,38 @@
+{
+  "name": "react-native-ad-consent",
+  "version": "1.0.0",
+  "description": "Uses the Google Mobile Ads Consent SDK to ask users for GDPR compliant ad consent. Supports iOS and Android.",
+  "main": "src/index.js",
+  "keywords": [
+    "AdMob",
+    "Ads",
+    "Consent",
+    "EEA",
+    "GDPR",
+    "Google",
+    "Mobile",
+    "MoPub",
+    "personalized",
+    "react-native",
+    "SDK"
+  ],
+  "author": "Birger Naß <birgernass@posteo.net>",
+  "license": "MIT",
+  "homepage": "https://github.com/birgernass/react-native-ad-consent.git",
+  "peerDependencies": {
+    "react-native": "^0.41.2"
+  },
+  "devDependencies": {
+    "babel-eslint": "^8.2.1",
+    "babel-preset-react-native": "^4.0.0",
+    "eslint": "^4.16.0",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-prettier": "^2.5.0",
+    "eslint-plugin-react": "^7.5.1",
+    "eslint-plugin-react-native": "^3.2.1",
+    "prettier": "^1.5.3"
+  }
+}
