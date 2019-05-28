@@ -48,6 +48,7 @@ public class RNAdConsentModule extends ReactContextBaseJavaModule {
         final Map<String, Object> constants = new HashMap<>();
         constants.put("NON_PERSONALIZED", NON_PERSONALIZED);
         constants.put("PERSONALIZED", PERSONALIZED);
+        constants.put("PREFERS_AD_FREE", PREFERS_AD_FREE);
         constants.put("UNKNOWN", UNKNOWN);
         return constants;
     }

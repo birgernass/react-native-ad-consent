@@ -29,8 +29,9 @@ NSString *const UNKNOWN_STATUS = @"unknown";
 
 - (NSDictionary *)constantsToExport {
   return @{
-    @"PERSONALIZED" : PERSONALIZED,
     @"NON_PERSONALIZED" : NON_PERSONALIZED,
+    @"PERSONALIZED" : PERSONALIZED,
+    @"PREFERS_AD_FREE" : PREFERS_AD_FREE,
     @"UNKNOWN" : UNKNOWN_STATUS,
   };
 }
