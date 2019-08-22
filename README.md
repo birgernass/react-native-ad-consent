@@ -120,7 +120,7 @@ const consentStatus = await RNAdConsent.requestConsentInfoUpdate({
 
 if (consentStatus === RNAdConsent.UNKNOWN) {
   const formResponse = await RNAdConsent.showGoogleConsentForm({
-    privacyUrl: "https://your-privacy-link.com",
+    privacyPolicyUrl: "https://your-privacy-link.com",
     shouldOfferAdFree: true,
   })
   
