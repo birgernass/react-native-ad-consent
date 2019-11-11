@@ -4,6 +4,9 @@
 Uses the Google Mobile Ads Consent SDK to ask users for GDPR compliant ad consent. Supports iOS and Android.
 
 ## Getting started
+
+For React Native versions < 0.60 use version 1.+ of this library and checkout the corresponding README file.
+
 ```sh
 $ yarn add react-native-ad-consent
 ```
@@ -14,53 +17,7 @@ or
 $ npm install react-native-ad-consent --save
 ```
 
-### Mostly automatic installation
-
-```sh
-$ react-native link react-native-ad-consent
-```
-
-### Manual installation
-
-
-#### iOS
-
-1. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
-2. Go to `node_modules` ➜ `react-native-ad-consent` and add `RNAdConsent.xcodeproj`
-3. In XCode, in the project navigator, select your project. Add `libRNAdConsent.a` to your project's `Build Phases` ➜ `Link Binary With Libraries`
-
-#### Android
-
-1. Open up `android/app/src/main/java/[...]/MainActivity.java`
-  - Add `import de.bnass.RNAdConsent.RNAdConsentPackage;` to the imports at the top of the file
-  - Add `new RNAdConsentPackage()` to the list returned by the `getPackages()` method
-2. Append the following lines to `android/settings.gradle`:
-    ```
-    include ':react-native-ad-consent'
-    project(':react-native-ad-consent').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-ad-consent/android')
-    ```
-3. Insert the following lines inside the dependencies block in `android/app/build.gradle`:
-    ```
-    compile project(':react-native-ad-consent')
-    ```
-
-### Additional Steps
-
-
-#### iOS
-
-##### Dependencies With Pods
-
-```diff
-+     pod 'PersonalizedAdConsent'
-+     pod 'Google-Mobile-Ads-SDK'
-```
-
-##### Dependencies Without Pods
-
-Follow the instructions for the [Google Mobile Ads SDK](https://developers.google.com/admob/ios/quick-start#import_the_mobile_ads_sdk) and the [Google Mobile Ads Consent SDK](https://developers.google.com/admob/ios/eu-consent#import_the_consent_sdk).
-
-##### Setup
+### Additional Steps (iOS)
 
 Add the following key to your project's `Info.plist`:
 ```diff
