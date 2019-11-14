@@ -19,6 +19,6 @@ Pod::Spec.new do |s|
   s.requires_arc = true
 
   s.dependency "React"
-  s.dependency "PersonalizedAdConsent", "~> 1.0.3"
-  s.dependency "Google-Mobile-Ads-SDK", "~> 7.43.0"
+  s.dependency "PersonalizedAdConsent"
+  s.dependency "Google-Mobile-Ads-SDK"
 end
