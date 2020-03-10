@@ -158,3 +158,14 @@ type FormResponse = "non_personalized" | "personalized" | "unknown" | "prefers_a
 Shows a Google-rendered consent form. Returns the user's choice as a string.
 
 >You should review the consent text carefully: what appears by default is a message that might be appropriate if you use Google to monetize your app; but we cannot provide legal advice on the consent text that is appropriate for you. _[source](https://developers.google.com/admob/android/eu-consent#google_rendered_consent_form)_
+
+### Forward consent to the Google Mobile Ads SDK
+
+```java
+Bundle extras = new Bundle();
+extras.putString("npa", "1");
+
+AdRequest request = new AdRequest.Builder()
+        .addNetworkExtrasBundle(AdMobAdapter.class, extras)
+        .build();
+```
