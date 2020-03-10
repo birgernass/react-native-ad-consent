@@ -92,26 +92,11 @@ RCT_EXPORT_METHOD(setConsentStatus
                   : (RCTPromiseRejectBlock)reject) {
   @try {
     if ([status isEqualToString:PERSONALIZED]) {
-      PACConsentInformation.sharedInstance.consentStatus =
-          PACConsentStatusPersonalized;
-      GADRequest *request = [GADRequest request];
-      GADExtras *extras = [[GADExtras alloc] init];
-      extras.additionalParameters = @{@"npa" : @"0"};
-      [request registerAdNetworkExtras:extras];
+      PACConsentInformation.sharedInstance.consentStatus = PACConsentStatusPersonalized;
     } else if ([status isEqualToString:NON_PERSONALIZED]) {
-      PACConsentInformation.sharedInstance.consentStatus =
-          PACConsentStatusNonPersonalized;
-      GADRequest *request = [GADRequest request];
-      GADExtras *extras = [[GADExtras alloc] init];
-      extras.additionalParameters = @{@"npa" : @"1"};
-      [request registerAdNetworkExtras:extras];
+      PACConsentInformation.sharedInstance.consentStatus = PACConsentStatusNonPersonalized;
     } else {
-      PACConsentInformation.sharedInstance.consentStatus =
-          PACConsentStatusUnknown;
-      GADRequest *request = [GADRequest request];
-      GADExtras *extras = [[GADExtras alloc] init];
-      extras.additionalParameters = @{@"npa" : @"0"};
-      [request registerAdNetworkExtras:extras];
+      PACConsentInformation.sharedInstance.consentStatus = PACConsentStatusUnknown;
     }
 
     resolve(@(YES));

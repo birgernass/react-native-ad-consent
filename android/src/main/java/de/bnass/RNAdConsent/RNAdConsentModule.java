@@ -57,12 +57,6 @@ public class RNAdConsentModule extends ReactContextBaseJavaModule {
         form.show();
     }
 
-    private void setConsent(ConsentStatus status) {
-        Bundle extras = new Bundle();
-        extras.putString("npa", status.equals(ConsentStatus.NON_PERSONALIZED) ? "1" : "0");
-        AdRequest request = new AdRequest.Builder().addNetworkExtrasBundle(AdMobAdapter.class, extras).build();
-    }
-
     @ReactMethod
     public void isRequestLocationInEeaOrUnknown(Promise promise) {
         try {
@@ -115,7 +109,7 @@ public class RNAdConsentModule extends ReactContextBaseJavaModule {
                 consentStatus = ConsentStatus.UNKNOWN;
             }
             ConsentInformation.getInstance(reactContext).setConsentStatus(consentStatus);
-            setConsent(consentStatus);
+
             promise.resolve(true);
         } catch (Exception e) {
             promise.reject(e);
