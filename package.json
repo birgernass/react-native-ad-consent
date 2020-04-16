@@ -22,6 +22,9 @@
   "peerDependencies": {
     "react-native": ">=0.60.0"
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
   "devDependencies": {
     "babel-eslint": "^8.2.1",
     "babel-preset-react-native": "^4.0.0",
