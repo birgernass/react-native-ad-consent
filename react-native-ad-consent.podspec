@@ -21,4 +21,5 @@ Pod::Spec.new do |s|
   s.dependency "React"
   s.dependency "PersonalizedAdConsent"
   s.dependency "Google-Mobile-Ads-SDK"
+  s.dependency "GoogleUserMessagingPlatform"
 end

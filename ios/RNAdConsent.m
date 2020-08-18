@@ -9,6 +9,7 @@
 #endif
 #import <GoogleMobileAds/GoogleMobileAds.h>
 #import <PersonalizedAdConsent/PersonalizedAdConsent.h>
+#include <UserMessagingPlatform/UserMessagingPlatform.h>
 
 @implementation RNAdConsent
 
@@ -28,12 +29,23 @@ NSString *const PREFERS_AD_FREE = @"prefers_ad_free";
 NSString *const UNKNOWN_STATUS = @"unknown";
 
 - (NSDictionary *)constantsToExport {
-  return @{
-    @"NON_PERSONALIZED" : NON_PERSONALIZED,
-    @"PERSONALIZED" : PERSONALIZED,
-    @"PREFERS_AD_FREE" : PREFERS_AD_FREE,
-    @"UNKNOWN" : UNKNOWN_STATUS,
-  };
+    return @{
+        @"NON_PERSONALIZED" : NON_PERSONALIZED,
+        @"PERSONALIZED" : PERSONALIZED,
+        @"PREFERS_AD_FREE" : PREFERS_AD_FREE,
+        @"UNKNOWN" : UNKNOWN_STATUS,
+        @"CONSENT_STATUS" : @{
+                @"NOT_REQUIRED" : @(UMPConsentStatusNotRequired),
+                @"OBTAINED" : @(UMPConsentStatusObtained),
+                @"REQUIRED" : @(UMPConsentStatusRequired),
+                @"UNKNOWN" : @(UMPConsentStatusUnknown)
+        },
+        @"CONSENT_TYPE" : @{
+                @"NON_PERSONALIZED" : @(UMPConsentTypeNonPersonalized),
+                @"PERSONALIZED" : @(UMPConsentTypePersonalized),
+                @"UNKNOWN" : @(UMPConsentTypeUnknown)
+        }
+    };
 }
 
 RCT_EXPORT_METHOD(isRequestLocationInEeaOrUnknown
@@ -175,7 +187,7 @@ RCT_EXPORT_METHOD(showGoogleConsentForm
     [form loadWithCompletionHandler:^(NSError *_Nullable error) {
       NSLog(@"Load complete. Error: %@", error);
       if (error) {
-        reject(@"requestConsentInfoUpdate_error", error.localizedDescription,
+        reject(@"showGoogleConsentForm_error", error.localizedDescription,
                error);
       } else {
         [form presentFromViewController:[UIApplication sharedApplication]
@@ -183,7 +195,7 @@ RCT_EXPORT_METHOD(showGoogleConsentForm
                       dismissCompletion:^(NSError *_Nullable error,
                                           BOOL userPrefersAdFree) {
                         if (error) {
-                          reject(@"requestConsentInfoUpdate_error",
+                          reject(@"showGoogleConsentForm_error",
                                  error.localizedDescription, error);
                         } else {
                           if (userPrefersAdFree) {
@@ -207,9 +219,85 @@ RCT_EXPORT_METHOD(showGoogleConsentForm
       }
     }];
   } @catch (NSError *error) {
-    reject(@"requestConsentInfoUpdate_error", error.localizedDescription,
+    reject(@"showGoogleConsentForm_error", error.localizedDescription,
            error);
   }
+}
+
+RCT_EXPORT_METHOD(UMP_requestConsentInfoUpdate
+                  : (RCTPromiseResolveBlock)resolve rejecter
+                  : (RCTPromiseRejectBlock)reject) {
+    @try {
+        UMPRequestParameters *parameters = [[UMPRequestParameters alloc] init];
+        
+        [UMPConsentInformation.sharedInstance
+         requestConsentInfoUpdateWithParameters:parameters
+         completionHandler:^(NSError *_Nullable error) {
+            if (error) {
+                NSLog(@"RNAdConsent [UMP requestConsentInfoUpdate] error: %@", error.localizedDescription);
+                reject(@"requestConsentInfoUpdate_error", error.localizedDescription, error);
+            } else {
+                bool isConsentFormAvailable = UMPConsentInformation.sharedInstance.formStatus == UMPFormStatusAvailable;
+                bool isRequestLocationInEeaOrUnknown = UMPConsentInformation.sharedInstance.consentStatus != UMPConsentStatusNotRequired;
+                
+                NSLog(@"RNAdConsent [UMP requestConsentInfoUpdate] formStatus: %ld consentStatus: %ld consentType: %ld isConsentFormAvailable: %d isRequestLocationInEeaOrUnknown: %d", (long)UMPConsentInformation.sharedInstance.formStatus, (long)UMPConsentInformation.sharedInstance.consentStatus, (long)UMPConsentInformation.sharedInstance.consentType, isConsentFormAvailable, isRequestLocationInEeaOrUnknown);
+                
+                NSDictionary *payload = @{
+                    @"consentStatus":@(UMPConsentInformation.sharedInstance.consentStatus),
+                    @"consentType":@(UMPConsentInformation.sharedInstance.consentType),
+                    @"isConsentFormAvailable": @(isConsentFormAvailable),
+                    @"isRequestLocationInEeaOrUnknown": @(isRequestLocationInEeaOrUnknown)
+                };
+                
+                resolve(payload);
+            }
+        }];
+    } @catch (NSError *error) {
+        NSLog(@"RNAdConsent [UMP requestConsentInfoUpdate] error: %@", error.localizedDescription);
+        reject(@"requestConsentInfoUpdate_error", error.localizedDescription,
+               error);
+    }
+}
+
+RCT_EXPORT_METHOD(UMP_showConsentForm
+                  : (RCTPromiseResolveBlock)resolve rejecter
+                  : (RCTPromiseRejectBlock)reject) {
+    @try {
+        [UMPConsentForm loadWithCompletionHandler:^(UMPConsentForm *form,
+                                                    NSError *loadError) {
+            if (loadError) {
+                NSLog(@"RNAdConsent [UMP showConsentForm] error: %@", loadError.localizedDescription);
+                reject(@"showConsentForm_error", loadError.localizedDescription, loadError);
+            } else {
+                [form
+                 presentFromViewController:[UIApplication sharedApplication].delegate.window.rootViewController
+                 completionHandler:^(NSError *_Nullable dismissError) {
+                    if (dismissError) {
+                        NSLog(@"RNAdConsent [UMP showConsentForm] error: %@", dismissError.localizedDescription);
+                        reject(@"showConsentForm_error", dismissError.localizedDescription, dismissError);
+                    } else {
+                        NSLog(@"RNAdConsent [UMP showConsentForm] consentStatus: %ld consentType: %ld", (long)UMPConsentInformation.sharedInstance.consentStatus, (long)UMPConsentInformation.sharedInstance.consentType);
+                        NSDictionary *payload = @{
+                            @"consentStatus":@(UMPConsentInformation.sharedInstance.consentStatus),
+                            @"consentType":@(UMPConsentInformation.sharedInstance.consentType)
+                        };
+                        resolve(payload);
+                    }
+                }];
+            }
+        }];
+    } @catch (NSError *error) {
+        NSLog(@"RNAdConsent [UMP showConsentForm] error: %@", error.localizedDescription);
+        reject(@"showConsentForm_error", error.localizedDescription, error);
+    }
+}
+
+RCT_EXPORT_METHOD(UMP_reset) {
+    @try {
+        [UMPConsentInformation.sharedInstance reset];
+    } @catch (NSError *error) {
+        NSLog(@"RNAdConsent [UMP reset] error: %@", error.localizedDescription);
+    }
 }
 
 @end
