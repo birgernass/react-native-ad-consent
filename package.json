@@ -1,6 +1,6 @@
 {
   "name": "react-native-ad-consent",
-  "version": "2.1.1",
+  "version": "3.0.0",
   "description": "A wrapper for Google's User Messaging Platform (UMP SDK) and Google's Consent Library.",
   "main": "src/index.js",
   "keywords": [
