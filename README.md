@@ -1,7 +1,7 @@
 
 # react-native-ad-consent
 
-Uses the Google Mobile Ads Consent SDK to ask users for GDPR compliant ad consent. Supports iOS and Android.
+A wrapper for Google's User Messaging Platform (UMP SDK) and Google's Consent Library.
 
 ## Getting started
 
@@ -14,41 +14,103 @@ $ yarn add react-native-ad-consent
 or
 
 ```sh
-$ npm install react-native-ad-consent --save
+$ npm install react-native-ad-consent
 ```
 
 ### Additional Steps (iOS)
 
-Add the following key to your project's `Info.plist`:
+Make sure you have your App ID in your project's `Info.plist`. :
 ```diff
-+               <key>GADIsAdManagerApp</key>
-+               <true/>
++               <key>GADApplicationIdentifier</key>
++               <string>ca-app-pub-3940256099942544~3347511713</string>
               </dict>
             </plist>
 ```
 
-Add the following initalization code to your project's `AppDelegate.h`:
+### Additional Steps (Android)
+
+Make sure you have your App ID in your project's `AndroidManifest.xml`. :
 ```diff
- #import <React/RCTBridgeDelegate.h>
- #import <UIKit/UIKit.h>
-+#import <GoogleMobileAds/GoogleMobileAds.h>
++             <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713"/>
+            </application>
 ```
 
-Add the following initalization code to your project's `AppDelegate.m`. Replace the sample AdMob App ID with your ID:
-```diff
-(BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-{
-+  [GADMobileAds configureWithApplicationID:@"ca-app-pub-3940256099942544~3347511713"];
+## UMP Usage
 
+### Known Issues
+
+* The consentType is currently always UNKNOWN (0)
+
+```javascript
+import { UMP } from 'react-native-ad-consent'
+
+const {
+  consentStatus,
+  consentType,
+  isConsentFormAvailable,
+  isRequestLocationInEeaOrUnknown,
+} = await UMP.requestConsentInfoUpdate()
+
+if (
+  isRequestLocationInEeaOrUnknown &&
+  isConsentFormAvailable &&
+  consentStatus === UMP.CONSENT_STATUS.REQUIRED
+) {
+  const { consentStatus, consentType } = await UMP.showConsentForm()
+}
 ```
 
-## Usage
+## UMP API
+
+### Constants
+
+| Name													| Value													|
+|-------------------------------|-------------------------------|
+| CONSENT_STATUS.OBTAINED				| 3															|
+| CONSENT_STATUS.NOT_REQUIRED		| 2															|
+| CONSENT_STATUS.REQUIRED				| 1															|
+| CONSENT_STATUS.UNKNOWN				| 0															|
+| CONSENT_TYPE.NON_PERSONALIZED	| 2															|
+| CONSENT_TYPE.PERSONALIZED			| 1															|
+| CONSENT_TYPE.UNKNOWN					| 0															|
+
+### Methods
+
+#### `requestConsentInfoUpdate(): Promise<ConsentInfoUpdate>`
+
+```
+type ConsentInfoUpdate = {
+  consentStatus: number,
+  consentType: number,
+  isConsentFormAvailable: boolean,
+  isRequestLocationInEeaOrUnknown: boolean,
+}
+```
+
+Returns the consent information.
+
+#### `showConsentForm(): Promise<ConsentFormResponse>`
+
+```
+type ConsentFormResponse = {
+  consentStatus: number,
+  consentType: number,
+}
+```
+
+Shows the consent form and returns the updated consentStatus and consentType on close.
+
+#### `reset(): void`
+
+Resets the consent state.
+
+## Consent Library Usage
 
 ### Get ad providers and set consent
 ```javascript
 import RNAdConsent from 'react-native-ad-consent'
 
-// always request the status of a user's consent first
+// request the consent info update before calling any other method
 const consentStatus = await RNAdConsent.requestConsentInfoUpdate({
   publisherId: "pub-1234567890",
 })
@@ -70,7 +132,7 @@ if (consentStatus === RNAdConsent.UNKNOWN) {
 ```javascript
 import RNAdConsent from 'react-native-ad-consent'
 
-// always request the status of a user's consent first
+// request the consent info update before calling any other method
 const consentStatus = await RNAdConsent.requestConsentInfoUpdate({
   publisherId: "pub-1234567890",
 })
@@ -89,7 +151,7 @@ if (consentStatus === RNAdConsent.UNKNOWN) {
 }
 ```
 
-## API
+## Consent Library API
 
 ### Constants
 
@@ -158,14 +220,3 @@ type FormResponse = "non_personalized" | "personalized" | "unknown" | "prefers_a
 Shows a Google-rendered consent form. Returns the user's choice as a string.
 
 >You should review the consent text carefully: what appears by default is a message that might be appropriate if you use Google to monetize your app; but we cannot provide legal advice on the consent text that is appropriate for you. _[source](https://developers.google.com/admob/android/eu-consent#google_rendered_consent_form)_
-
-### Forward consent to the Google Mobile Ads SDK
-
-```java
-Bundle extras = new Bundle();
-extras.putString("npa", "1");
-
-AdRequest request = new AdRequest.Builder()
-        .addNetworkExtrasBundle(AdMobAdapter.class, extras)
-        .build();
-```
