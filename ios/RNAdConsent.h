@@ -4,8 +4,6 @@
 #else
 #import <React/RCTBridgeModule.h>
 #endif
-// #import "MoPub.h"
-// #import "PersonalizedAdConsent.h"
 
 @interface RNAdConsent : NSObject <RCTBridgeModule>
 

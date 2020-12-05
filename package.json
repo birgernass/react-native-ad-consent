@@ -1,7 +1,7 @@
 {
   "name": "react-native-ad-consent",
   "version": "3.0.0",
-  "description": "A wrapper for Google's User Messaging Platform (UMP SDK) and Google's Consent Library.",
+  "description": "Google's User Messaging Platform (UMP SDK) for React Native.",
   "main": "src/index.js",
   "keywords": [
     "AdManager",
@@ -24,7 +24,7 @@
     "TCString",
     "UMP"
   ],
-  "author": "Birger Naß <birgernass@posteo.net>",
+  "author": "Birger Naß",
   "license": "MIT",
   "homepage": "https://github.com/birgernass/react-native-ad-consent.git",
   "peerDependencies": {
