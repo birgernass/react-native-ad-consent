@@ -33,16 +33,42 @@ RCT_EXPORT_MODULE()
                 @"NON_PERSONALIZED" : @(UMPConsentTypeNonPersonalized),
                 @"PERSONALIZED" : @(UMPConsentTypePersonalized),
                 @"UNKNOWN" : @(UMPConsentTypeUnknown)
+        },
+        @"UMP_DEBUG_GEOGRAPHY" : @{
+                @"DISABLED" : @(UMPDebugGeographyDisabled),
+                @"EEA" : @(UMPDebugGeographyEEA),
+                @"NOT_EEA" : @(UMPDebugGeographyNotEEA)
         }
     };
 }
 
 RCT_EXPORT_METHOD(UMP_requestConsentInfoUpdate
+                  : (NSDictionary *)options resolver
                   : (RCTPromiseResolveBlock)resolve rejecter
                   : (RCTPromiseRejectBlock)reject) {
     @try {
         UMPRequestParameters *parameters = [[UMPRequestParameters alloc] init];
-        
+
+        NSInteger debugGeography = [RCTConvert NSInteger:options[@"debugGeography"]];
+        NSArray *testDeviceIds = [options valueForKeyPath:@"testDeviceIds"];
+
+        BOOL hasDebugGeography = debugGeography == UMPDebugGeographyEEA || debugGeography == UMPDebugGeographyNotEEA;
+        BOOL hasTestDeviceIds = testDeviceIds.count > 0;
+
+        if (hasDebugGeography || hasTestDeviceIds) {
+            UMPDebugSettings *debugSettings = [[UMPDebugSettings alloc] init];
+
+            if (hasDebugGeography) {
+                debugSettings.geography = debugGeography;
+            }
+
+            if (hasTestDeviceIds) {
+                debugSettings.testDeviceIdentifiers = testDeviceIds;
+            }
+
+            parameters.debugSettings = debugSettings;
+        }
+
         [UMPConsentInformation.sharedInstance
          requestConsentInfoUpdateWithParameters:parameters
          completionHandler:^(NSError *_Nullable error) {
@@ -52,16 +78,16 @@ RCT_EXPORT_METHOD(UMP_requestConsentInfoUpdate
             } else {
                 bool isConsentFormAvailable = UMPConsentInformation.sharedInstance.formStatus == UMPFormStatusAvailable;
                 bool isRequestLocationInEeaOrUnknown = UMPConsentInformation.sharedInstance.consentStatus != UMPConsentStatusNotRequired;
-                
+
                 NSLog(@"RNAdConsent [UMP requestConsentInfoUpdate] formStatus: %ld consentStatus: %ld consentType: %ld isConsentFormAvailable: %d isRequestLocationInEeaOrUnknown: %d", (long)UMPConsentInformation.sharedInstance.formStatus, (long)UMPConsentInformation.sharedInstance.consentStatus, (long)UMPConsentInformation.sharedInstance.consentType, isConsentFormAvailable, isRequestLocationInEeaOrUnknown);
-                
+
                 NSDictionary *payload = @{
                     @"consentStatus":@(UMPConsentInformation.sharedInstance.consentStatus),
                     @"consentType":@(UMPConsentInformation.sharedInstance.consentType),
                     @"isConsentFormAvailable": @(isConsentFormAvailable),
                     @"isRequestLocationInEeaOrUnknown": @(isRequestLocationInEeaOrUnknown)
                 };
-                
+
                 resolve(payload);
             }
         }];

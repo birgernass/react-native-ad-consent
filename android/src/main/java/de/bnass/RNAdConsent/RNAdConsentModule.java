@@ -1,6 +1,7 @@
 package de.bnass.RNAdConsent;
 
 import android.app.Activity;
+import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -13,8 +14,11 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 
+import com.google.android.ump.ConsentDebugSettings;
 import com.google.android.ump.ConsentRequestParameters;
 import com.google.android.ump.FormError;
 import com.google.android.ump.UserMessagingPlatform;
@@ -51,17 +55,48 @@ public class RNAdConsentModule extends ReactContextBaseJavaModule {
         UMP_consentType.put("UNKNOWN", com.google.android.ump.ConsentInformation.ConsentType.UNKNOWN);
         constants.put("UMP_CONSENT_TYPE", UMP_consentType);
 
+        final Map<String, Object> UMP_debugGeography = new HashMap<>();
+        UMP_debugGeography.put("DISABLED", ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_DISABLED);
+        UMP_debugGeography.put("EEA", ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA);
+        UMP_debugGeography.put("NOT_EEA", ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_NOT_EEA);
+        constants.put("UMP_DEBUG_GEOGRAPHY", UMP_debugGeography);
+
         return constants;
     }
 
     private com.google.android.ump.ConsentInformation consentInformation;
 
     @ReactMethod
-    public void UMP_requestConsentInfoUpdate(final Promise promise) {
+    public void UMP_requestConsentInfoUpdate(final ReadableMap config, final Promise promise) {
         try {
-            ConsentRequestParameters consentRequestParameters = new ConsentRequestParameters.Builder().build();
+            Context context = reactContext.getApplicationContext();
+            ConsentRequestParameters.Builder paramsBuilder = new ConsentRequestParameters.Builder();
 
-            consentInformation = UserMessagingPlatform.getConsentInformation(reactContext.getApplicationContext());
+            int debugGeography = config.getInt("debugGeography");
+            ReadableArray testDeviceIds = config.getArray("testDeviceIds");
+
+            boolean hasDebugGeography = debugGeography == ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA || debugGeography == ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_NOT_EEA;
+            boolean hasTestDeviceIds = testDeviceIds.size() > 0;
+
+            if (hasDebugGeography || hasTestDeviceIds) {
+                ConsentDebugSettings.Builder debugSettingsBuilder = new ConsentDebugSettings.Builder(context);
+
+                if (hasDebugGeography) {
+                    debugSettingsBuilder.setDebugGeography(debugGeography);
+                }
+
+                if (hasTestDeviceIds) {
+                    for (int i = 0; i < testDeviceIds.size(); i++) {
+                        debugSettingsBuilder.addTestDeviceHashedId(testDeviceIds.getString(i));
+                    }
+                }
+
+                paramsBuilder.setConsentDebugSettings(debugSettingsBuilder.build());
+            }
+
+            ConsentRequestParameters consentRequestParameters = paramsBuilder.build();
+
+            consentInformation = UserMessagingPlatform.getConsentInformation(context);
 
             consentInformation.requestConsentInfoUpdate(
                     reactContext.getCurrentActivity(),

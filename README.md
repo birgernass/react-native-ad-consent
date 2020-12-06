@@ -35,10 +35,6 @@ Make sure you have your App ID in your project's `AndroidManifest.xml`:
 
 ## Usage
 
-### Known Issues
-
-* The consentType is currently always UNKNOWN (0)
-
 ```javascript
 import { UMP } from 'react-native-ad-consent'
 
@@ -58,6 +54,28 @@ if (
 }
 ```
 
+### Testing
+
+```javascript
+const {
+  consentStatus,
+  consentType,
+  isConsentFormAvailable,
+  isRequestLocationInEeaOrUnknown,
+} = await UMP.requestConsentInfoUpdate({
+   debugGeography: UMP.DEBUG_GEOGRAPHY.EEA,
+   testDeviceIds: ['TEST-DEVICE-HASHED-ID'],
+})
+```
+
+>The UMP SDK provides a simple way to test your app's behavior as though the device was located in the EEA or UK using the debugGeography property of type UMPDebugGeography on UMPDebugSettings.
+>You will need to provide your test device's hashed ID in your app's debug settings to use the debug functionality. If you call requestConsentUpdateWithParameters without setting this value, your app will log the required ID hash when run.
+>The UMP SDK provides a simple way to test your app's behavior as though the device was located in the EEA or UK using the debugGeography property of type UMPDebugGeography on UMPDebugSettings. _[source](https://developers.google.com/admob/ump/ios/quick-start#testing)_
+
+### Known Issues
+
+* The consentType is currently always UNKNOWN (0)
+
 ## API
 
 ### Constants
@@ -71,12 +89,20 @@ if (
 | CONSENT_TYPE.NON_PERSONALIZED	| 2															|
 | CONSENT_TYPE.PERSONALIZED			| 1															|
 | CONSENT_TYPE.UNKNOWN					| 0															|
+| DEBUG_GEOGRAPHY.NOT_EEA				| 2															|
+| DEBUG_GEOGRAPHY.EEA			      | 1															|
+| DEBUG_GEOGRAPHY.DISABLED    	| 0															|
 
 ### Methods
 
-#### `requestConsentInfoUpdate(): Promise<ConsentInfoUpdate>`
+#### `requestConsentInfoUpdate(config?: ConsentInfoConfig): Promise<ConsentInfoUpdate>`
 
 ```
+type ConsentInfoConfig = {
+  debugGeography: number,
+  testDeviceIds: Array<String>,
+}
+
 type ConsentInfoUpdate = {
   consentStatus: number,
   consentType: number,
