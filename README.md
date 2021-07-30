@@ -17,10 +17,12 @@ $ npm install react-native-ad-consent
 
 ### Additional Steps (iOS)
 
-Make sure you have your App ID in your project's `Info.plist`:
+Make sure that you have your App ID and the NSUserTrackingUsageDescription in your project's `Info.plist` as shown [here](https://developers.google.com/ad-manager/ump/ios/quick-start).
 ```diff
 +               <key>GADApplicationIdentifier</key>
 +               <string>ca-app-pub-3940256099942544~3347511713</string>
++               <key>NSUserTrackingUsageDescription</key>
++               <string>This identifier will be used to deliver personalized ads to you.</string>
               </dict>
             </plist>
 ```
@@ -40,7 +42,6 @@ import { UMP } from 'react-native-ad-consent'
 
 const {
   consentStatus,
-  consentType,
   isConsentFormAvailable,
   isRequestLocationInEeaOrUnknown,
 } = await UMP.requestConsentInfoUpdate()
@@ -50,7 +51,7 @@ if (
   isConsentFormAvailable &&
   consentStatus === UMP.CONSENT_STATUS.REQUIRED
 ) {
-  const { consentStatus, consentType } = await UMP.showConsentForm()
+  const { consentStatus } = await UMP.showConsentForm()
 }
 ```
 
@@ -59,7 +60,6 @@ if (
 ```javascript
 const {
   consentStatus,
-  consentType,
   isConsentFormAvailable,
   isRequestLocationInEeaOrUnknown,
 } = await UMP.requestConsentInfoUpdate({
@@ -72,10 +72,6 @@ const {
 >You will need to provide your test device's hashed ID in your app's debug settings to use the debug functionality. If you call requestConsentUpdateWithParameters without setting this value, your app will log the required ID hash when run.
 >The UMP SDK provides a simple way to test your app's behavior as though the device was located in the EEA or UK using the debugGeography property of type UMPDebugGeography on UMPDebugSettings. _[source](https://developers.google.com/admob/ump/ios/quick-start#testing)_
 
-### Known Issues
-
-* The consentType is currently always UNKNOWN (0)
-
 ## API
 
 ### Constants
@@ -86,9 +82,6 @@ const {
 | CONSENT_STATUS.NOT_REQUIRED		| 2															|
 | CONSENT_STATUS.REQUIRED				| 1															|
 | CONSENT_STATUS.UNKNOWN				| 0															|
-| CONSENT_TYPE.NON_PERSONALIZED	| 2															|
-| CONSENT_TYPE.PERSONALIZED			| 1															|
-| CONSENT_TYPE.UNKNOWN					| 0															|
 | DEBUG_GEOGRAPHY.NOT_EEA				| 2															|
 | DEBUG_GEOGRAPHY.EEA			      | 1															|
 | DEBUG_GEOGRAPHY.DISABLED    	| 0															|
@@ -105,7 +98,6 @@ type ConsentInfoConfig = {
 
 type ConsentInfoUpdate = {
   consentStatus: number,
-  consentType: number,
   isConsentFormAvailable: boolean,
   isRequestLocationInEeaOrUnknown: boolean,
 }
@@ -118,11 +110,10 @@ Returns the consent information.
 ```
 type ConsentFormResponse = {
   consentStatus: number,
-  consentType: number,
 }
 ```
 
-Shows the consent form and returns the updated consentStatus and consentType on close.
+Shows the consent form and returns the updated consentStatus on close.
 
 #### `reset(): void`
 

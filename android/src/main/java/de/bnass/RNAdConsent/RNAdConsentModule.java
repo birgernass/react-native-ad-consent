@@ -49,12 +49,6 @@ public class RNAdConsentModule extends ReactContextBaseJavaModule {
         UMP_consentStatus.put("UNKNOWN", com.google.android.ump.ConsentInformation.ConsentStatus.UNKNOWN);
         constants.put("UMP_CONSENT_STATUS", UMP_consentStatus);
 
-        final Map<String, Object> UMP_consentType = new HashMap<>();
-        UMP_consentType.put("NON_PERSONALIZED", com.google.android.ump.ConsentInformation.ConsentType.NON_PERSONALIZED);
-        UMP_consentType.put("PERSONALIZED", com.google.android.ump.ConsentInformation.ConsentType.PERSONALIZED);
-        UMP_consentType.put("UNKNOWN", com.google.android.ump.ConsentInformation.ConsentType.UNKNOWN);
-        constants.put("UMP_CONSENT_TYPE", UMP_consentType);
-
         final Map<String, Object> UMP_debugGeography = new HashMap<>();
         UMP_debugGeography.put("DISABLED", ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_DISABLED);
         UMP_debugGeography.put("EEA", ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA);
@@ -105,15 +99,13 @@ public class RNAdConsentModule extends ReactContextBaseJavaModule {
                         @Override
                         public void onConsentInfoUpdateSuccess() {
                             int consentStatus = consentInformation.getConsentStatus();
-                            int consentType = consentInformation.getConsentType();
                             boolean isConsentFormAvailable = consentInformation.isConsentFormAvailable();
                             boolean isRequestLocationInEeaOrUnknown = consentStatus != com.google.android.ump.ConsentInformation.ConsentStatus.NOT_REQUIRED;
 
-                            Log.d(TAG, "[UMP requestConsentInfoUpdate] consentStatus: " + consentStatus + " consentType: " + consentType + " isConsentFormAvailable: " + isConsentFormAvailable + " isRequestLocationInEeaOrUnknown: " + isRequestLocationInEeaOrUnknown);
+                            Log.d(TAG, "[UMP requestConsentInfoUpdate] consentStatus: " + consentStatus + " isConsentFormAvailable: " + isConsentFormAvailable + " isRequestLocationInEeaOrUnknown: " + isRequestLocationInEeaOrUnknown);
 
                             WritableMap payload = Arguments.createMap();
                             payload.putInt("consentStatus", consentStatus);
-                            payload.putInt("consentType", consentType);
                             payload.putBoolean("isConsentFormAvailable", isConsentFormAvailable);
                             payload.putBoolean("isRequestLocationInEeaOrUnknown", isRequestLocationInEeaOrUnknown);
 
@@ -158,13 +150,11 @@ public class RNAdConsentModule extends ReactContextBaseJavaModule {
                                                         promise.reject("" + formError.getErrorCode(), formError.getMessage());
                                                     } else {
                                                         int consentStatus = consentInformation.getConsentStatus();
-                                                        int consentType = consentInformation.getConsentType();
 
                                                         Log.d(TAG, "[UMP show] consentStatus: " + consentStatus);
 
                                                         WritableMap payload = Arguments.createMap();
                                                         payload.putInt("consentStatus", consentStatus);
-                                                        payload.putInt("consentType", consentType);
 
                                                         promise.resolve(payload);
                                                     }

@@ -29,11 +29,6 @@ RCT_EXPORT_MODULE()
                 @"REQUIRED" : @(UMPConsentStatusRequired),
                 @"UNKNOWN" : @(UMPConsentStatusUnknown)
         },
-        @"UMP_CONSENT_TYPE" : @{
-                @"NON_PERSONALIZED" : @(UMPConsentTypeNonPersonalized),
-                @"PERSONALIZED" : @(UMPConsentTypePersonalized),
-                @"UNKNOWN" : @(UMPConsentTypeUnknown)
-        },
         @"UMP_DEBUG_GEOGRAPHY" : @{
                 @"DISABLED" : @(UMPDebugGeographyDisabled),
                 @"EEA" : @(UMPDebugGeographyEEA),
@@ -79,11 +74,10 @@ RCT_EXPORT_METHOD(UMP_requestConsentInfoUpdate
                 bool isConsentFormAvailable = UMPConsentInformation.sharedInstance.formStatus == UMPFormStatusAvailable;
                 bool isRequestLocationInEeaOrUnknown = UMPConsentInformation.sharedInstance.consentStatus != UMPConsentStatusNotRequired;
 
-                NSLog(@"RNAdConsent [UMP requestConsentInfoUpdate] formStatus: %ld consentStatus: %ld consentType: %ld isConsentFormAvailable: %d isRequestLocationInEeaOrUnknown: %d", (long)UMPConsentInformation.sharedInstance.formStatus, (long)UMPConsentInformation.sharedInstance.consentStatus, (long)UMPConsentInformation.sharedInstance.consentType, isConsentFormAvailable, isRequestLocationInEeaOrUnknown);
+                NSLog(@"RNAdConsent [UMP requestConsentInfoUpdate] formStatus: %ld consentStatus: %ld isConsentFormAvailable: %d isRequestLocationInEeaOrUnknown: %d", (long)UMPConsentInformation.sharedInstance.formStatus, (long)UMPConsentInformation.sharedInstance.consentStatus, isConsentFormAvailable, isRequestLocationInEeaOrUnknown);
 
                 NSDictionary *payload = @{
                     @"consentStatus":@(UMPConsentInformation.sharedInstance.consentStatus),
-                    @"consentType":@(UMPConsentInformation.sharedInstance.consentType),
                     @"isConsentFormAvailable": @(isConsentFormAvailable),
                     @"isRequestLocationInEeaOrUnknown": @(isRequestLocationInEeaOrUnknown)
                 };
@@ -115,10 +109,9 @@ RCT_EXPORT_METHOD(UMP_showConsentForm
                         NSLog(@"RNAdConsent [UMP showConsentForm] error: %@", dismissError.localizedDescription);
                         reject(@"showConsentForm_error", dismissError.localizedDescription, dismissError);
                     } else {
-                        NSLog(@"RNAdConsent [UMP showConsentForm] consentStatus: %ld consentType: %ld", (long)UMPConsentInformation.sharedInstance.consentStatus, (long)UMPConsentInformation.sharedInstance.consentType);
+                        NSLog(@"RNAdConsent [UMP showConsentForm] consentStatus: %ld", (long)UMPConsentInformation.sharedInstance.consentStatus);
                         NSDictionary *payload = @{
-                            @"consentStatus":@(UMPConsentInformation.sharedInstance.consentStatus),
-                            @"consentType":@(UMPConsentInformation.sharedInstance.consentType)
+                            @"consentStatus":@(UMPConsentInformation.sharedInstance.consentStatus)
                         };
                         resolve(payload);
                     }

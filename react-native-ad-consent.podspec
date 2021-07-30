@@ -12,9 +12,10 @@ Pod::Spec.new do |s|
   s.homepage     = "https://github.com/birgernass/react-native-ad-consent"
   s.license      = { :type => "MIT", :file => "LICENSE" }
   s.authors      = { "Birger Naß" => "birgernass@posteo.net" }
-  s.platforms    = { :ios => "9.0", :tvos => "10.0" }
+  s.platforms    = { :ios => "10.0" }
   s.source       = { :git => "https://github.com/birgernass/react-native-ad-consent.git", :tag => "#{s.version}" }
 
+  s.frameworks   = "AppTrackingTransparency"
   s.source_files = "ios/**/*.{h,m,swift}"
   s.requires_arc = true
 
