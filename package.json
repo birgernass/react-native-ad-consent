@@ -1,6 +1,6 @@
 {
   "name": "react-native-ad-consent",
-  "version": "4.0.0",
+  "version": "5.0.0-rc.0",
   "description": "Google's User Messaging Platform (UMP SDK) for React Native.",
   "main": "src/index.js",
   "keywords": [
