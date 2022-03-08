@@ -46,6 +46,7 @@ RCT_EXPORT_METHOD(UMP_requestConsentInfoUpdate
             [options valueForKeyPath:@"testDeviceIds"] ?: [[NSMutableArray alloc] init];
 
         parameters.debugSettings = debugSettings;
+        parameters.tagForUnderAgeOfConsent = [options[@"tagForUnderAgeOfConsent"] boolValue] ?: FALSE;
 
         [UMPConsentInformation.sharedInstance
          requestConsentInfoUpdateWithParameters:parameters

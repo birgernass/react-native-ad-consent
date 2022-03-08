@@ -79,6 +79,7 @@ const {
 ```
 type ConsentInfoConfig = {
   debugGeography: number,
+  tagForUnderAgeOfConsent: boolean,
   testDeviceIds: string[],
 }
 

@@ -83,6 +83,10 @@ public class RNAdConsentModule extends ReactContextBaseJavaModule {
 
             paramsBuilder.setConsentDebugSettings(debugSettingsBuilder.build());
 
+            if (config.hasKey("tagForUnderAgeOfConsent")) {
+                paramsBuilder.setTagForUnderAgeOfConsent(config.getBoolean("tagForUnderAgeOfConsent"));
+            }
+
             ConsentRequestParameters consentRequestParameters = paramsBuilder.build();
 
             if (getCurrentActivity() == null) {
