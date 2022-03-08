@@ -1,13 +1,9 @@
-#import "RNAdConsent.h"
-#import "RCTBridgeModule.h"
-#if __has_include(<React/RCTConvert.h>)
+#import <React/RCTUtils.h>
+
 #import <React/RCTConvert.h>
-#elif __has_include("RCTConvert.h")
-#import "RCTConvert.h"
-#else
-#import "React/RCTConvert.h" // Required when used as a Pod in a Swift project
-#endif
 #include <UserMessagingPlatform/UserMessagingPlatform.h>
+#import "RCTBridgeModule.h"
+#import "RNAdConsent.h"
 
 @implementation RNAdConsent
 
@@ -38,98 +34,70 @@ RCT_EXPORT_MODULE()
 }
 
 RCT_EXPORT_METHOD(UMP_requestConsentInfoUpdate
-                  : (NSDictionary *)options resolver
-                  : (RCTPromiseResolveBlock)resolve rejecter
+                  : (NSDictionary *)options
+                  : (RCTPromiseResolveBlock)resolve
                   : (RCTPromiseRejectBlock)reject) {
     @try {
         UMPRequestParameters *parameters = [[UMPRequestParameters alloc] init];
+        UMPDebugSettings *debugSettings = [[UMPDebugSettings alloc] init];
 
-        NSInteger debugGeography = [RCTConvert NSInteger:options[@"debugGeography"]];
-        NSArray *testDeviceIds = [options valueForKeyPath:@"testDeviceIds"];
+        debugSettings.geography = [options[@"debugGeography"] integerValue] ?: UMPDebugGeographyDisabled;
+        debugSettings.testDeviceIdentifiers =
+            [options valueForKeyPath:@"testDeviceIds"] ?: [[NSMutableArray alloc] init];
 
-        BOOL hasDebugGeography = debugGeography == UMPDebugGeographyEEA || debugGeography == UMPDebugGeographyNotEEA;
-        BOOL hasTestDeviceIds = testDeviceIds.count > 0;
-
-        if (hasDebugGeography || hasTestDeviceIds) {
-            UMPDebugSettings *debugSettings = [[UMPDebugSettings alloc] init];
-
-            if (hasDebugGeography) {
-                debugSettings.geography = debugGeography;
-            }
-
-            if (hasTestDeviceIds) {
-                debugSettings.testDeviceIdentifiers = testDeviceIds;
-            }
-
-            parameters.debugSettings = debugSettings;
-        }
+        parameters.debugSettings = debugSettings;
 
         [UMPConsentInformation.sharedInstance
          requestConsentInfoUpdateWithParameters:parameters
          completionHandler:^(NSError *_Nullable error) {
             if (error) {
-                NSLog(@"RNAdConsent [UMP requestConsentInfoUpdate] error: %@", error.localizedDescription);
                 reject(@"requestConsentInfoUpdate_error", error.localizedDescription, error);
             } else {
                 bool isConsentFormAvailable = UMPConsentInformation.sharedInstance.formStatus == UMPFormStatusAvailable;
                 bool isRequestLocationInEeaOrUnknown = UMPConsentInformation.sharedInstance.consentStatus != UMPConsentStatusNotRequired;
 
-                NSLog(@"RNAdConsent [UMP requestConsentInfoUpdate] formStatus: %ld consentStatus: %ld isConsentFormAvailable: %d isRequestLocationInEeaOrUnknown: %d", (long)UMPConsentInformation.sharedInstance.formStatus, (long)UMPConsentInformation.sharedInstance.consentStatus, isConsentFormAvailable, isRequestLocationInEeaOrUnknown);
-
-                NSDictionary *payload = @{
+                resolve(@{
                     @"consentStatus":@(UMPConsentInformation.sharedInstance.consentStatus),
                     @"isConsentFormAvailable": @(isConsentFormAvailable),
                     @"isRequestLocationInEeaOrUnknown": @(isRequestLocationInEeaOrUnknown)
-                };
-
-                resolve(payload);
+                });
             }
         }];
     } @catch (NSError *error) {
-        NSLog(@"RNAdConsent [UMP requestConsentInfoUpdate] error: %@", error.localizedDescription);
         reject(@"requestConsentInfoUpdate_error", error.localizedDescription,
                error);
     }
 }
 
 RCT_EXPORT_METHOD(UMP_showConsentForm
-                  : (RCTPromiseResolveBlock)resolve rejecter
+                  : (RCTPromiseResolveBlock)resolve
                   : (RCTPromiseRejectBlock)reject) {
     @try {
         [UMPConsentForm loadWithCompletionHandler:^(UMPConsentForm *form,
                                                     NSError *loadError) {
             if (loadError) {
-                NSLog(@"RNAdConsent [UMP showConsentForm] error: %@", loadError.localizedDescription);
                 reject(@"showConsentForm_error", loadError.localizedDescription, loadError);
             } else {
                 [form
                  presentFromViewController:[UIApplication sharedApplication].delegate.window.rootViewController
                  completionHandler:^(NSError *_Nullable dismissError) {
                     if (dismissError) {
-                        NSLog(@"RNAdConsent [UMP showConsentForm] error: %@", dismissError.localizedDescription);
                         reject(@"showConsentForm_error", dismissError.localizedDescription, dismissError);
                     } else {
-                        NSLog(@"RNAdConsent [UMP showConsentForm] consentStatus: %ld", (long)UMPConsentInformation.sharedInstance.consentStatus);
-                        NSDictionary *payload = @{
+                        resolve(@{
                             @"consentStatus":@(UMPConsentInformation.sharedInstance.consentStatus)
-                        };
-                        resolve(payload);
+                        });
                     }
                 }];
             }
         }];
     } @catch (NSError *error) {
-        NSLog(@"RNAdConsent [UMP showConsentForm] error: %@", error.localizedDescription);
         reject(@"showConsentForm_error", error.localizedDescription, error);
     }
 }
 
 RCT_EXPORT_METHOD(UMP_reset) {
-    @try {
-        [UMPConsentInformation.sharedInstance reset];
-    } @catch (NSError *error) {
-        NSLog(@"RNAdConsent [UMP reset] error: %@", error.localizedDescription);
-    }
+    [UMPConsentInformation.sharedInstance reset];
 }
 
 @end

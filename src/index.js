@@ -3,6 +3,7 @@ import { NativeModules } from 'react-native' // eslint-disable-line
 const {
   UMP_CONSENT_STATUS,
   UMP_DEBUG_GEOGRAPHY,
+  UMP_ERROR_CODE = {},
   UMP_requestConsentInfoUpdate,
   UMP_reset,
   UMP_showConsentForm,
@@ -11,6 +12,7 @@ const {
 export const UMP = {
   CONSENT_STATUS: UMP_CONSENT_STATUS,
   DEBUG_GEOGRAPHY: UMP_DEBUG_GEOGRAPHY,
+  ERROR_CODE: UMP_ERROR_CODE,
   requestConsentInfoUpdate: config =>
     UMP_requestConsentInfoUpdate({
       debugGeography: UMP_DEBUG_GEOGRAPHY.DISABLED,

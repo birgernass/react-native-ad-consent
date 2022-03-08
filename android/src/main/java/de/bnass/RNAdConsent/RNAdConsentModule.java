@@ -1,9 +1,5 @@
 package de.bnass.RNAdConsent;
 
-import android.app.Activity;
-import android.content.Context;
-import android.util.Log;
-
 import androidx.annotation.Nullable;
 
 import java.util.Map;
@@ -19,18 +15,22 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 
 import com.google.android.ump.ConsentDebugSettings;
+import com.google.android.ump.ConsentInformation;
 import com.google.android.ump.ConsentRequestParameters;
 import com.google.android.ump.FormError;
 import com.google.android.ump.UserMessagingPlatform;
 
-public class RNAdConsentModule extends ReactContextBaseJavaModule {
-    private static final String TAG = "RNAdConsent";
+import javax.annotation.Nonnull;
 
-    private final ReactApplicationContext reactContext;
+public class RNAdConsentModule extends ReactContextBaseJavaModule {
+    private static final String E_ACTIVITY_NOT_AVAILABLE = "E_ACTIVITY_NOT_AVAILABLE";
+    private static final String E_ACTIVITY_NOT_AVAILABLE_MSG = "Activity is not available.";
+
+    private ConsentInformation consentInformation;
 
     public RNAdConsentModule(ReactApplicationContext reactContext) {
         super(reactContext);
-        this.reactContext = reactContext;
+        consentInformation = UserMessagingPlatform.getConsentInformation(reactContext);
     }
 
     @Override
@@ -42,67 +42,63 @@ public class RNAdConsentModule extends ReactContextBaseJavaModule {
     public Map<String, Object> getConstants() {
         final Map<String, Object> constants = new HashMap<>();
 
-        final Map<String, Object> UMP_consentStatus = new HashMap<>();
-        UMP_consentStatus.put("NOT_REQUIRED", com.google.android.ump.ConsentInformation.ConsentStatus.NOT_REQUIRED);
-        UMP_consentStatus.put("OBTAINED", com.google.android.ump.ConsentInformation.ConsentStatus.OBTAINED);
-        UMP_consentStatus.put("REQUIRED", com.google.android.ump.ConsentInformation.ConsentStatus.REQUIRED);
-        UMP_consentStatus.put("UNKNOWN", com.google.android.ump.ConsentInformation.ConsentStatus.UNKNOWN);
-        constants.put("UMP_CONSENT_STATUS", UMP_consentStatus);
+        final Map<String, Object> UMP_CONSENT_STATUS = new HashMap<>();
+        UMP_CONSENT_STATUS.put("NOT_REQUIRED", ConsentInformation.ConsentStatus.NOT_REQUIRED);
+        UMP_CONSENT_STATUS.put("OBTAINED", ConsentInformation.ConsentStatus.OBTAINED);
+        UMP_CONSENT_STATUS.put("REQUIRED", ConsentInformation.ConsentStatus.REQUIRED);
+        UMP_CONSENT_STATUS.put("UNKNOWN", ConsentInformation.ConsentStatus.UNKNOWN);
+        constants.put("UMP_CONSENT_STATUS", UMP_CONSENT_STATUS);
 
-        final Map<String, Object> UMP_debugGeography = new HashMap<>();
-        UMP_debugGeography.put("DISABLED", ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_DISABLED);
-        UMP_debugGeography.put("EEA", ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA);
-        UMP_debugGeography.put("NOT_EEA", ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_NOT_EEA);
-        constants.put("UMP_DEBUG_GEOGRAPHY", UMP_debugGeography);
+        final Map<String, Object> UMP_DEBUG_GEOGRAPHY = new HashMap<>();
+        UMP_DEBUG_GEOGRAPHY.put("DISABLED", ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_DISABLED);
+        UMP_DEBUG_GEOGRAPHY.put("EEA", ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA);
+        UMP_DEBUG_GEOGRAPHY.put("NOT_EEA", ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_NOT_EEA);
+        constants.put("UMP_DEBUG_GEOGRAPHY", UMP_DEBUG_GEOGRAPHY);
+
+        final Map<String, Object> UMP_ERROR_CODE = new HashMap<>();
+        UMP_ERROR_CODE.put("E_ACTIVITY_NOT_AVAILABLE", E_ACTIVITY_NOT_AVAILABLE);
+        constants.put("UMP_ERROR_CODE", UMP_ERROR_CODE);
 
         return constants;
     }
 
-    private com.google.android.ump.ConsentInformation consentInformation;
-
     @ReactMethod
-    public void UMP_requestConsentInfoUpdate(final ReadableMap config, final Promise promise) {
+    public void UMP_requestConsentInfoUpdate(@Nonnull final ReadableMap config, final Promise promise) {
         try {
-            Context context = reactContext.getApplicationContext();
             ConsentRequestParameters.Builder paramsBuilder = new ConsentRequestParameters.Builder();
+            ConsentDebugSettings.Builder debugSettingsBuilder =
+                    new ConsentDebugSettings.Builder(getReactApplicationContext().getApplicationContext());
 
-            int debugGeography = config.getInt("debugGeography");
-            ReadableArray testDeviceIds = config.getArray("testDeviceIds");
+            if (config.hasKey("testDeviceIds")) {
+                ReadableArray testDeviceIds = config.getArray("testDeviceIds");
 
-            boolean hasDebugGeography = debugGeography == ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA || debugGeography == ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_NOT_EEA;
-            boolean hasTestDeviceIds = testDeviceIds.size() > 0;
-
-            if (hasDebugGeography || hasTestDeviceIds) {
-                ConsentDebugSettings.Builder debugSettingsBuilder = new ConsentDebugSettings.Builder(context);
-
-                if (hasDebugGeography) {
-                    debugSettingsBuilder.setDebugGeography(debugGeography);
+                for (int i = 0; i < testDeviceIds.size(); i++) {
+                    debugSettingsBuilder.addTestDeviceHashedId(testDeviceIds.getString(i));
                 }
-
-                if (hasTestDeviceIds) {
-                    for (int i = 0; i < testDeviceIds.size(); i++) {
-                        debugSettingsBuilder.addTestDeviceHashedId(testDeviceIds.getString(i));
-                    }
-                }
-
-                paramsBuilder.setConsentDebugSettings(debugSettingsBuilder.build());
             }
+
+            if (config.hasKey("debugGeography")) {
+                debugSettingsBuilder.setDebugGeography(config.getInt("debugGeography"));
+            }
+
+            paramsBuilder.setConsentDebugSettings(debugSettingsBuilder.build());
 
             ConsentRequestParameters consentRequestParameters = paramsBuilder.build();
 
-            consentInformation = UserMessagingPlatform.getConsentInformation(context);
+            if (getCurrentActivity() == null) {
+                promise.reject(E_ACTIVITY_NOT_AVAILABLE, E_ACTIVITY_NOT_AVAILABLE_MSG);
+                return;
+            }
 
             consentInformation.requestConsentInfoUpdate(
-                    reactContext.getCurrentActivity(),
+                    getCurrentActivity(),
                     consentRequestParameters,
-                    new com.google.android.ump.ConsentInformation.OnConsentInfoUpdateSuccessListener() {
+                    new ConsentInformation.OnConsentInfoUpdateSuccessListener() {
                         @Override
                         public void onConsentInfoUpdateSuccess() {
                             int consentStatus = consentInformation.getConsentStatus();
                             boolean isConsentFormAvailable = consentInformation.isConsentFormAvailable();
-                            boolean isRequestLocationInEeaOrUnknown = consentStatus != com.google.android.ump.ConsentInformation.ConsentStatus.NOT_REQUIRED;
-
-                            Log.d(TAG, "[UMP requestConsentInfoUpdate] consentStatus: " + consentStatus + " isConsentFormAvailable: " + isConsentFormAvailable + " isRequestLocationInEeaOrUnknown: " + isRequestLocationInEeaOrUnknown);
+                            boolean isRequestLocationInEeaOrUnknown = consentStatus != ConsentInformation.ConsentStatus.NOT_REQUIRED;
 
                             WritableMap payload = Arguments.createMap();
                             payload.putInt("consentStatus", consentStatus);
@@ -112,17 +108,14 @@ public class RNAdConsentModule extends ReactContextBaseJavaModule {
                             promise.resolve(payload);
                         }
                     },
-                    new com.google.android.ump.ConsentInformation.OnConsentInfoUpdateFailureListener() {
+                    new ConsentInformation.OnConsentInfoUpdateFailureListener() {
                         @Override
                         public void onConsentInfoUpdateFailure(FormError formError) {
-
-                            Log.d(TAG, "[UMP requestConsentInfoUpdate] error: " + formError.getMessage());
                             promise.reject("" + formError.getErrorCode(), formError.getMessage());
                         }
                     }
             );
         } catch (Exception e) {
-            Log.d(TAG, "[UMP requestConsentInfoUpdate] error: " + e.getMessage());
             promise.reject(e);
         }
     }
@@ -130,28 +123,28 @@ public class RNAdConsentModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void UMP_showConsentForm(final Promise promise) {
         try {
-            final Activity activity = reactContext.getCurrentActivity();
+            if (getCurrentActivity() == null) {
+                promise.reject(E_ACTIVITY_NOT_AVAILABLE, E_ACTIVITY_NOT_AVAILABLE_MSG);
+                return;
+            }
 
-            activity.runOnUiThread(new Runnable() {
+            getCurrentActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     UserMessagingPlatform.loadConsentForm(
-                            reactContext.getApplicationContext(),
+                            getReactApplicationContext().getApplicationContext(),
                             new UserMessagingPlatform.OnConsentFormLoadSuccessListener() {
                                 @Override
                                 public void onConsentFormLoadSuccess(com.google.android.ump.ConsentForm consentForm) {
                                     consentForm.show(
-                                            activity,
+                                            getCurrentActivity(),
                                             new com.google.android.ump.ConsentForm.OnConsentFormDismissedListener() {
                                                 @Override
                                                 public void onConsentFormDismissed(@Nullable FormError formError) {
                                                     if (formError != null) {
-                                                        Log.d(TAG, "[UMP showConsentForm] error: " + formError.getMessage());
                                                         promise.reject("" + formError.getErrorCode(), formError.getMessage());
                                                     } else {
                                                         int consentStatus = consentInformation.getConsentStatus();
-
-                                                        Log.d(TAG, "[UMP show] consentStatus: " + consentStatus);
 
                                                         WritableMap payload = Arguments.createMap();
                                                         payload.putInt("consentStatus", consentStatus);
@@ -165,7 +158,6 @@ public class RNAdConsentModule extends ReactContextBaseJavaModule {
                             new UserMessagingPlatform.OnConsentFormLoadFailureListener() {
                                 @Override
                                 public void onConsentFormLoadFailure(FormError formError) {
-                                    Log.d(TAG, "[UMP showConsentForm] error: " + formError.getMessage());
                                     promise.reject("" + formError.getErrorCode(), formError.getMessage());
                                 }
                             }
@@ -173,17 +165,12 @@ public class RNAdConsentModule extends ReactContextBaseJavaModule {
                 }
             });
         } catch (Exception e) {
-            Log.d(TAG, "[UMP showConsentForm] error: " + e.getMessage());
             promise.reject(e);
         }
     }
 
     @ReactMethod
     public void UMP_reset() {
-        try {
-            consentInformation.reset();
-        } catch (Exception e) {
-            Log.d(TAG, "[UMP reset] error: " + e.getMessage());
-        }
+        consentInformation.reset();
     }
 }

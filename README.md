@@ -74,26 +74,12 @@ const {
 
 ## API
 
-### Constants
-
-| Name													| Value													|
-|-------------------------------|-------------------------------|
-| CONSENT_STATUS.OBTAINED				| 3															|
-| CONSENT_STATUS.NOT_REQUIRED		| 2															|
-| CONSENT_STATUS.REQUIRED				| 1															|
-| CONSENT_STATUS.UNKNOWN				| 0															|
-| DEBUG_GEOGRAPHY.NOT_EEA				| 2															|
-| DEBUG_GEOGRAPHY.EEA			      | 1															|
-| DEBUG_GEOGRAPHY.DISABLED    	| 0															|
-
-### Methods
-
 #### `requestConsentInfoUpdate(config?: ConsentInfoConfig): Promise<ConsentInfoUpdate>`
 
 ```
 type ConsentInfoConfig = {
   debugGeography: number,
-  testDeviceIds: Array<String>,
+  testDeviceIds: string[],
 }
 
 type ConsentInfoUpdate = {
