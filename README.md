@@ -1,3 +1,4 @@
+> **Recommendation:** The code of this repository was merged into [react-native-google-mobile-ads](https://github.com/invertase/react-native-google-mobile-ads), a better maintained and more feature-rich library. Consider using it instead of this library.
 
 # react-native-ad-consent
 
