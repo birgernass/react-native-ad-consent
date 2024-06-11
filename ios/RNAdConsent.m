@@ -25,6 +25,11 @@ RCT_EXPORT_MODULE()
                 @"REQUIRED" : @(UMPConsentStatusRequired),
                 @"UNKNOWN" : @(UMPConsentStatusUnknown)
         },
+        @"UMP_PRIVACY_OPTIONS_REQUIREMENT_STATUS" : @{
+                @"NOT_REQUIRED" : @(UMPPrivacyOptionsRequirementStatusNotRequired),
+                @"REQUIRED" : @(UMPPrivacyOptionsRequirementStatusRequired),
+                @"UNKNOWN" : @(UMPPrivacyOptionsRequirementStatusUnknown)
+        },
         @"UMP_DEBUG_GEOGRAPHY" : @{
                 @"DISABLED" : @(UMPDebugGeographyDisabled),
                 @"EEA" : @(UMPDebugGeographyEEA),
@@ -58,9 +63,11 @@ RCT_EXPORT_METHOD(UMP_requestConsentInfoUpdate
                 bool isRequestLocationInEeaOrUnknown = UMPConsentInformation.sharedInstance.consentStatus != UMPConsentStatusNotRequired;
 
                 resolve(@{
-                    @"consentStatus":@(UMPConsentInformation.sharedInstance.consentStatus),
+                    @"canRequestAds": @(UMPConsentInformation.sharedInstance.canRequestAds),
+                    @"consentStatus": @(UMPConsentInformation.sharedInstance.consentStatus),
                     @"isConsentFormAvailable": @(isConsentFormAvailable),
-                    @"isRequestLocationInEeaOrUnknown": @(isRequestLocationInEeaOrUnknown)
+                    @"isRequestLocationInEeaOrUnknown": @(isRequestLocationInEeaOrUnknown),
+                    @"privacyOptionsRequirementStatus": @(UMPConsentInformation.sharedInstance.privacyOptionsRequirementStatus)
                 });
             }
         }];
@@ -86,7 +93,9 @@ RCT_EXPORT_METHOD(UMP_showConsentForm
                         reject(@"showConsentForm_error", dismissError.localizedDescription, dismissError);
                     } else {
                         resolve(@{
-                            @"consentStatus":@(UMPConsentInformation.sharedInstance.consentStatus)
+                            @"canRequestAds": @(UMPConsentInformation.sharedInstance.canRequestAds),
+                            @"consentStatus":@(UMPConsentInformation.sharedInstance.consentStatus),
+                            @"privacyOptionsRequirementStatus": @(UMPConsentInformation.sharedInstance.privacyOptionsRequirementStatus)
                         });
                     }
                 }];

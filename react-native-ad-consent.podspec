@@ -11,8 +11,8 @@ Pod::Spec.new do |s|
                    DESC
   s.homepage     = "https://github.com/birgernass/react-native-ad-consent"
   s.license      = { :type => "MIT", :file => "LICENSE" }
-  s.authors      = { "Birger Naß" => "birgernass@posteo.net" }
-  s.platforms    = { :ios => "10.0" }
+  s.authors      = "Birger Naß"
+  s.platforms    = { :ios => "12.0" }
   s.source       = { :git => "https://github.com/birgernass/react-native-ad-consent.git", :tag => "#{s.version}" }
 
   s.frameworks   = "AppTrackingTransparency"
@@ -20,5 +20,5 @@ Pod::Spec.new do |s|
   s.requires_arc = true
 
   s.dependency "React"
-  s.dependency "GoogleUserMessagingPlatform"
+  s.dependency "GoogleUserMessagingPlatform", "2.4.0"
 end

@@ -16,26 +16,6 @@ or
 $ npm install react-native-ad-consent
 ```
 
-### Additional Steps (iOS)
-
-Make sure that you have your App ID and the NSUserTrackingUsageDescription in your project's `Info.plist` as shown [here](https://developers.google.com/ad-manager/ump/ios/quick-start).
-```diff
-+               <key>GADApplicationIdentifier</key>
-+               <string>ca-app-pub-3940256099942544~3347511713</string>
-+               <key>NSUserTrackingUsageDescription</key>
-+               <string>This identifier will be used to deliver personalized ads to you.</string>
-              </dict>
-            </plist>
-```
-
-### Additional Steps (Android)
-
-Make sure you have your App ID in your project's `AndroidManifest.xml`:
-```diff
-+             <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713"/>
-            </application>
-```
-
 ## Usage
 
 ```javascript
@@ -52,7 +32,7 @@ if (
   isConsentFormAvailable &&
   consentStatus === UMP.CONSENT_STATUS.REQUIRED
 ) {
-  const { consentStatus } = await UMP.showConsentForm()
+  const { canRequestAds, consentStatus } = await UMP.showConsentForm()
 }
 ```
 
@@ -60,9 +40,11 @@ if (
 
 ```javascript
 const {
+  canRequestAds,
   consentStatus,
   isConsentFormAvailable,
   isRequestLocationInEeaOrUnknown,
+  privacyOptionsRequirementStatus,
 } = await UMP.requestConsentInfoUpdate({
    debugGeography: UMP.DEBUG_GEOGRAPHY.EEA,
    testDeviceIds: ['TEST-DEVICE-HASHED-ID'],

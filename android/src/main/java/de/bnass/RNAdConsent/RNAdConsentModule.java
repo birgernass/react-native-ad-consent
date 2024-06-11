@@ -59,6 +59,12 @@ public class RNAdConsentModule extends ReactContextBaseJavaModule {
         UMP_ERROR_CODE.put("E_ACTIVITY_NOT_AVAILABLE", E_ACTIVITY_NOT_AVAILABLE);
         constants.put("UMP_ERROR_CODE", UMP_ERROR_CODE);
 
+        final Map<String, Object> UMP_PRIVACY_OPTIONS_REQUIREMENT_STATUS = new HashMap<>();
+        UMP_PRIVACY_OPTIONS_REQUIREMENT_STATUS.put("NOT_REQUIRED", ConsentInformation.PrivacyOptionsRequirementStatus.NOT_REQUIRED.ordinal());
+        UMP_PRIVACY_OPTIONS_REQUIREMENT_STATUS.put("REQUIRED", ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED.ordinal());
+        UMP_PRIVACY_OPTIONS_REQUIREMENT_STATUS.put("UNKNOWN", ConsentInformation.PrivacyOptionsRequirementStatus.UNKNOWN.ordinal());
+        constants.put("UMP_PRIVACY_OPTIONS_REQUIREMENT_STATUS", UMP_PRIVACY_OPTIONS_REQUIREMENT_STATUS);
+
         return constants;
     }
 
@@ -101,13 +107,14 @@ public class RNAdConsentModule extends ReactContextBaseJavaModule {
                         @Override
                         public void onConsentInfoUpdateSuccess() {
                             int consentStatus = consentInformation.getConsentStatus();
-                            boolean isConsentFormAvailable = consentInformation.isConsentFormAvailable();
                             boolean isRequestLocationInEeaOrUnknown = consentStatus != ConsentInformation.ConsentStatus.NOT_REQUIRED;
 
                             WritableMap payload = Arguments.createMap();
+                            payload.putBoolean("canRequestAds", consentInformation.canRequestAds());
                             payload.putInt("consentStatus", consentStatus);
-                            payload.putBoolean("isConsentFormAvailable", isConsentFormAvailable);
+                            payload.putBoolean("isConsentFormAvailable", consentInformation.isConsentFormAvailable());
                             payload.putBoolean("isRequestLocationInEeaOrUnknown", isRequestLocationInEeaOrUnknown);
+                            payload.putInt("privacyOptionsRequirementStatus", consentInformation.getPrivacyOptionsRequirementStatus().ordinal());
 
                             promise.resolve(payload);
                         }
@@ -148,10 +155,10 @@ public class RNAdConsentModule extends ReactContextBaseJavaModule {
                                                     if (formError != null) {
                                                         promise.reject("" + formError.getErrorCode(), formError.getMessage());
                                                     } else {
-                                                        int consentStatus = consentInformation.getConsentStatus();
-
                                                         WritableMap payload = Arguments.createMap();
-                                                        payload.putInt("consentStatus", consentStatus);
+                                                        payload.putBoolean("canRequestAds", consentInformation.canRequestAds());
+                                                        payload.putInt("consentStatus", consentInformation.getConsentStatus());
+                                                        payload.putInt("privacyOptionsRequirementStatus", consentInformation.getPrivacyOptionsRequirementStatus().ordinal());
 
                                                         promise.resolve(payload);
                                                     }

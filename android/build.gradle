@@ -16,8 +16,8 @@ android {
     buildToolsVersion "29.0.3"
 
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 29
+        minSdkVersion 19
+        targetSdkVersion 33
     }
     lintOptions {
         abortOnError false
@@ -30,6 +30,5 @@ repositories {
 
 dependencies {
     implementation 'com.facebook.react:react-native:+'
-    api 'com.google.android.ump:user-messaging-platform:2.0.0'
+    api 'com.google.android.ump:user-messaging-platform:2.2.0'
 }
-  
